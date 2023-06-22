@@ -53,6 +53,7 @@ const H1 = styled.h1`
 function App() {
   const [network, updateNetwork] = useState(network1);
   const [nodes, setNodes] = useState(3);
+  const [aristas, setAristas] = useState(3);
   const [weightList, setWeightList] = useState({});
   const [startAnimation, setStartAnimation] = useState(false);
   const canvasRef = useRef(null)
@@ -84,7 +85,7 @@ function App() {
     }
     // console.log('parent', parent)
 
-    while (l < (nods.length - 1) && i < net.length) {
+    while (l < (nods.length) && i < net.length) {
       minNode = sorted[i];
       // console.log(minNode);
       u = minNode.e[0]
@@ -95,13 +96,23 @@ function App() {
 
       x = forest.find(u)
       y = forest.find(v)
-      // console.log('x,y', x, y)
+      console.log('x,y', x, y)
 
       if (x != y) {
         l = l + 1;
         forest.link(u, v);
         // console.log(u, v)
 
+        canvas.node(u).highlight().size('1.25x')
+        canvas.node(u).color('orange')
+        canvas.pause(0.5)
+
+        canvas.edge([u, v]).highlight(0)
+        canvas.edge([u, v]).traverse('blue').thickness(5)
+        canvas.node(v).highlight().size('1.25x')
+        canvas.node(v).color('orange')
+        canvas.pause(0.5)
+      } else {
         canvas.node(u).highlight().size('1.25x')
         canvas.node(u).color('orange')
         canvas.pause(0.5)
@@ -156,7 +167,9 @@ function App() {
     // Fórmula para calcular el número de aristas en un grafo completo: m = (n * (n - 1)) / 2
     return (numVertices * (numVertices - 1)) / 2;
   }
-
+  function obtenerVerticesNoRepetidos(numeroNodos) {
+    return numeroNodos * (numeroNodos - 1) / 2;
+  }
 
   function configCanvas(network) {
     const canvas = createCanvas('graph');
@@ -206,7 +219,6 @@ function App() {
     // setTimeout(() => {
     // const edges = generarAristas(nodes, formData.getAll("w[]"))
     const network = getNetwork(formData.getAll("w[]"), getArray(nodes - 1))
-    debugger
     // const edges = calcularAristas(nodes, formData.getAll("w[]"))
     // const n = getArray(nodes - 1)
     // const network = { edges, nodes: n }
@@ -217,7 +229,8 @@ function App() {
   }
 
   function handleChange(event) {
-    setNodes(calcularAristas(event.currentTarget.value))
+    setNodes(event.currentTarget.value)
+    setAristas(calcularAristas(event.currentTarget.value))
   }
 
   return (
@@ -228,9 +241,10 @@ function App() {
           <Form action="" onSubmit={handleSubmit}>
             <label htmlFor="">Ingrese el número de vertices</label>
             <input type="text" name="nodes" onChange={handleChange} defaultValue={3} placeholder='Ingrese el número de nodos' />
-            <label htmlFor="">Aristas</label>
+            <label htmlFor="">Total de Aristas {aristas}</label>
+
             {
-              Array.from({ length: calcularAristas(nodes) }).map((item, index) => {
+              Array.from({ length: aristas }).map((item, index) => {
                 return (
                   <>
                     <label htmlFor="">Arista {index + 1}</label>
