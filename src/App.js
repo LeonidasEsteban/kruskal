@@ -12,6 +12,10 @@ const AppStyled = styled.main`
     max-inline-size: 1024px;
     margin: 0 auto;
   }
+  .grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+  }
 
 `
 
@@ -20,8 +24,13 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  text-align: left;
+  font-size: 1.5rem;
+  label {
+    font-weight: bold;
+  }
   input {
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     border-radius: .5rem;
     padding: .5rem 1rem;
   }
@@ -43,12 +52,13 @@ const H1 = styled.h1`
 
 function App() {
   const [network, updateNetwork] = useState(network1);
-  const [nodes, setNodes] = useState([]);
+  const [nodes, setNodes] = useState(4);
+  const [weightList, setWeightList] = useState({});
   const [startAnimation, setStartAnimation] = useState(false);
   const canvasRef = useRef(null)
 
 
-  const prim = (net, nods = nodes, canvas) => {
+  const prim = (net, nods, canvas) => {
     let maxW = 10000;
     let n;
     let filtered;
@@ -119,16 +129,34 @@ function App() {
   // }, [])
 
   if (startAnimation) {
-    prim(network.edges, nodes, canvasRef.current)
+    prim(network.edges, network.edges, canvasRef.current)
     setStartAnimation(false)
   }
+
+  function generarAristas(numVertices, weightList) {
+    const aristas = [];
+
+    // Generar todas las combinaciones posibles de aristas sin repetición, evitando el vértice 0
+    for (let i = 0; i < numVertices - 1; i++) {
+      for (let j = i + 1; j < numVertices; j++) {
+        // Generar un peso aleatorio entre 1 y 10 (puedes ajustar el rango según tus necesidades)
+        const peso = Math.floor(Math.random() * 10) + 1;
+        debugger
+        // Agregar la arista al arreglo de aristas en el formato deseado
+        aristas.push({ e: [i, j], w: weightList[i] });
+      }
+    }
+
+    return aristas;
+  }
+
 
   function configCanvas(network) {
     const canvas = createCanvas('graph');
     canvasRef.current = canvas
     canvas.remove();
-    canvas.size([500, 500]);
-    canvas.zoom(1.5);
+    canvas.size([700, 700]);
+    canvas.zoom(5);
     canvas.edgelayout('symmetric');
     canvasRef.current.nodes(network.nodes).add().color('blue')
     network.edges.map(item => {
@@ -151,25 +179,51 @@ function App() {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const nodes = formData.get('nodes')
-    const array = getArray(nodes)
-    setNodes(array)
-    // const network = networkList[nodes - 1]
-    const network = network2
+
+    // var weightList = [];
+    // debugger
+    // formData.getAll("w[]").forEach(function (value, index) {
+    //   weightList.push(value)
+    //   // weightList["w" + (index + 1)] = value;
+    // });
+    // setWeightList(formData.getAll("w[]"))
+    // setTimeout(() => {
+    const edges = generarAristas(nodes, formData.getAll("w[]"))
+    const n = getArray(nodes - 1)
+    const network = { edges, nodes: n }
     configCanvas(network)
     updateNetwork(network);
     setStartAnimation(true);
+    // }, 100)
+  }
+
+  function handleChange(event) {
+    setNodes(event.currentTarget.value)
   }
 
   return (
     <AppStyled className="App">
       <div className="wrapper">
         <H1>Algoritmo Kruskal</H1>
-        <Form action="" onSubmit={handleSubmit}>
-          <input type="text" name="nodes" placeholder='Ingrese el número de nodos' />
-          <button>¡animar!</button>
-        </Form>
-        <div className="graph-section">
-          <div id="graph"></div>
+        <div className="grid">
+          <Form action="" onSubmit={handleSubmit}>
+            <label htmlFor="">Ingrese el número de nodos</label>
+            <input type="text" name="nodes" onChange={handleChange} value={nodes} placeholder='Ingrese el número de nodos' />
+            {
+              Array.from({ length: nodes }).map((item, index) => {
+                return (
+                  <>
+                    <label htmlFor="">Peso de Edge {index + 1}</label>
+                    <input type="text" name="w[]" placeholder={`Peso de Edge ${index + 1}`} />
+                  </>
+                )
+              })
+            }
+            <button>¡animar!</button>
+          </Form>
+          <div className="graph-section">
+            <div id="graph"></div>
+          </div>
         </div>
       </div>
     </AppStyled>
