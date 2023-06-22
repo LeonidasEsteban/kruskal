@@ -52,7 +52,7 @@ const H1 = styled.h1`
 
 function App() {
   const [network, updateNetwork] = useState(network1);
-  const [nodes, setNodes] = useState(4);
+  const [nodes, setNodes] = useState(3);
   const [weightList, setWeightList] = useState({});
   const [startAnimation, setStartAnimation] = useState(false);
   const canvasRef = useRef(null)
@@ -70,7 +70,7 @@ function App() {
       return x;
     });
 
-    console.log(sorted)
+    // console.log(sorted)
 
     let forest = new UnionFind(nods.length);
 
@@ -82,25 +82,25 @@ function App() {
       parent.push(node)
       rank.push(0)
     }
-    console.log('parent', parent)
+    // console.log('parent', parent)
 
     while (l < (nods.length - 1) && i < net.length) {
       minNode = sorted[i];
-      console.log(minNode);
+      // console.log(minNode);
       u = minNode.e[0]
       v = minNode.e[1]
       w = minNode.w
       i = i + 1
-      console.log('u v w', u, v, w)
+      // console.log('u v w', u, v, w)
 
       x = forest.find(u)
       y = forest.find(v)
-      console.log('x,y', x, y)
+      // console.log('x,y', x, y)
 
       if (x != y) {
         l = l + 1;
         forest.link(u, v);
-        console.log(u, v)
+        // console.log(u, v)
 
         canvas.node(u).highlight().size('1.25x')
         canvas.node(u).color('orange')
@@ -141,13 +141,20 @@ function App() {
       for (let j = i + 1; j < numVertices; j++) {
         // Generar un peso aleatorio entre 1 y 10 (puedes ajustar el rango según tus necesidades)
         const peso = Math.floor(Math.random() * 10) + 1;
-        debugger
+        // debugger
         // Agregar la arista al arreglo de aristas en el formato deseado
-        aristas.push({ e: [i, j], w: weightList[i] });
+        // aristas.push({ e: [i, j], w: weightList[i] });
+        aristas.push({ e: [i, j], w: peso });
       }
     }
+    console.log(aristas)
 
     return aristas;
+  }
+
+  function calcularAristas(numVertices) {
+    // Fórmula para calcular el número de aristas en un grafo completo: m = (n * (n - 1)) / 2
+    return (numVertices * (numVertices - 1)) / 2;
   }
 
 
@@ -174,6 +181,15 @@ function App() {
 
     return array;
   }
+  function getNetwork(links, nodes) {
+    const edges = links.map((item) => {
+      return JSON.parse(item)
+    })
+    return {
+      edges,
+      nodes,
+    }
+  }
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -188,9 +204,12 @@ function App() {
     // });
     // setWeightList(formData.getAll("w[]"))
     // setTimeout(() => {
-    const edges = generarAristas(nodes, formData.getAll("w[]"))
-    const n = getArray(nodes - 1)
-    const network = { edges, nodes: n }
+    // const edges = generarAristas(nodes, formData.getAll("w[]"))
+    const network = getNetwork(formData.getAll("w[]"), getArray(nodes - 1))
+    debugger
+    // const edges = calcularAristas(nodes, formData.getAll("w[]"))
+    // const n = getArray(nodes - 1)
+    // const network = { edges, nodes: n }
     configCanvas(network)
     updateNetwork(network);
     setStartAnimation(true);
@@ -198,7 +217,7 @@ function App() {
   }
 
   function handleChange(event) {
-    setNodes(event.currentTarget.value)
+    setNodes(calcularAristas(event.currentTarget.value))
   }
 
   return (
@@ -207,14 +226,15 @@ function App() {
         <H1>Algoritmo Kruskal</H1>
         <div className="grid">
           <Form action="" onSubmit={handleSubmit}>
-            <label htmlFor="">Ingrese el número de nodos</label>
+            <label htmlFor="">Ingrese el número de vertices</label>
             <input type="text" name="nodes" onChange={handleChange} value={nodes} placeholder='Ingrese el número de nodos' />
+            <label htmlFor="">Aristas</label>
             {
-              Array.from({ length: nodes }).map((item, index) => {
+              Array.from({ length: calcularAristas(nodes) }).map((item, index) => {
                 return (
                   <>
-                    <label htmlFor="">Peso de Edge {index + 1}</label>
-                    <input type="text" name="w[]" placeholder={`Peso de Edge ${index + 1}`} />
+                    <label htmlFor="">Arista {index + 1}</label>
+                    <input type="text" name="w[]" defaultValue={'{"e": [0,1], "w": 11}'} required placeholder={`ejem: {"e":[0,1], "w":10}`} />
                   </>
                 )
               })
