@@ -227,7 +227,7 @@ function App() {
         <div className="grid">
           <Form action="" onSubmit={handleSubmit}>
             <label htmlFor="">Ingrese el número de vertices</label>
-            <input type="text" name="nodes" onChange={handleChange} value={nodes} placeholder='Ingrese el número de nodos' />
+            <input type="text" name="nodes" onChange={handleChange} defaultValue={3} placeholder='Ingrese el número de nodos' />
             <label htmlFor="">Aristas</label>
             {
               Array.from({ length: calcularAristas(nodes) }).map((item, index) => {
