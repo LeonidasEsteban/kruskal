@@ -16,6 +16,27 @@ const AppStyled = styled.main`
     display: grid;
     grid-template-columns: 300px 1fr;
   }
+  .arista {
+    display: flex;
+    gap: 1rem;
+    input {
+      flex: 1;
+      width: 100%;
+      font-size: .8rem;
+      &:invalid {
+        border-color: red;
+      }
+      &:placeholder-shown:invalid {
+        border-color: grey;
+      }
+      &:valid {
+        border-color: green;
+      }
+      &::-webkit-inner-spin-button {
+        display: none;
+      }
+    }
+  }
 
 `
 
@@ -51,11 +72,8 @@ const H1 = styled.h1`
 `
 
 function App() {
-  const [network, updateNetwork] = useState(network1);
   const [nodes, setNodes] = useState(3);
   const [aristas, setAristas] = useState(3);
-  const [weightList, setWeightList] = useState({});
-  const [startAnimation, setStartAnimation] = useState(false);
   const canvasRef = useRef(null)
 
 
@@ -126,50 +144,21 @@ function App() {
     }
   }
 
-  // useEffect(() => {
 
 
-  //   // canvas.nodes(network.nodes).add().color('blue');
 
-  //   // network.edges.map(item => {
-  //   //   canvas.edge(item.e).add({ length: item.w }).label().add({ text: item.w });
-  //   // })
-  //   // canvas.pause(2);
-
-
-  // }, [])
-
-  if (startAnimation) {
-    prim(network.edges, network.edges, canvasRef.current)
-    setStartAnimation(false)
-  }
 
   function generarAristas(numVertices, weightList) {
     const aristas = [];
-
-    // Generar todas las combinaciones posibles de aristas sin repetición, evitando el vértice 0
     for (let i = 0; i < numVertices - 1; i++) {
       for (let j = i + 1; j < numVertices; j++) {
-        // Generar un peso aleatorio entre 1 y 10 (puedes ajustar el rango según tus necesidades)
         const peso = Math.floor(Math.random() * 10) + 1;
-        // debugger
-        // Agregar la arista al arreglo de aristas en el formato deseado
-        // aristas.push({ e: [i, j], w: weightList[i] });
         aristas.push({ e: [i, j], w: peso });
       }
     }
-    console.log(aristas)
-
     return aristas;
   }
 
-  function calcularAristas(numVertices) {
-    // Fórmula para calcular el número de aristas en un grafo completo: m = (n * (n - 1)) / 2
-    return (numVertices * (numVertices - 1)) / 2;
-  }
-  function obtenerVerticesNoRepetidos(numeroNodos) {
-    return numeroNodos * (numeroNodos - 1) / 2;
-  }
 
   function configCanvas(network) {
     const canvas = createCanvas('graph');
@@ -194,43 +183,44 @@ function App() {
 
     return array;
   }
-  function getNetwork(links, nodes) {
-    const edges = links.map((item) => {
-      return JSON.parse(item)
-    })
-    return {
-      edges,
-      nodes,
-    }
-  }
+
 
   function handleSubmit(event) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const nodes = formData.get('nodes')
+    const edges = formData.getAll("n1List[]").map((edgeA, index) => {
+      return {
+        e: [edgeA, formData.getAll("n2List[]")[index]],
+        w: formData.getAll("w[]")[index]
+      }
+    })
+    const network = { edges, nodes: getArray(nodes - 1) }
 
-    // var weightList = [];
-    // debugger
-    // formData.getAll("w[]").forEach(function (value, index) {
-    //   weightList.push(value)
-    //   // weightList["w" + (index + 1)] = value;
-    // });
-    // setWeightList(formData.getAll("w[]"))
-    // setTimeout(() => {
-    // const edges = generarAristas(nodes, formData.getAll("w[]"))
-    const network = getNetwork(formData.getAll("w[]"), getArray(nodes - 1))
-    // const edges = calcularAristas(nodes, formData.getAll("w[]"))
-    // const n = getArray(nodes - 1)
-    // const network = { edges, nodes: n }
     configCanvas(network)
-    updateNetwork(network);
-    setStartAnimation(true);
-    // }, 100)
+    prim(network.edges, network.edges, canvasRef.current)
+
   }
 
+  function obtenerVerticesNoRepetidos(numeroNodos) {
+    return numeroNodos * (numeroNodos - 1) / 2;
+  }
+
+
   function handleChange(event) {
+    const maxAristas = obtenerVerticesNoRepetidos(nodes)
+    const aristas = Number(event.currentTarget.value)
+    if (aristas > maxAristas) {
+      alert(`El número máximo permitido de aristas para los vertices ingresados es ${maxAristas}`)
+      event.currentTarget.value = maxAristas
+      setAristas(maxAristas)
+      return
+    }
+    setAristas(aristas)
+  }
+
+  function handleUpdateNodesChange(event) {
     setNodes(event.currentTarget.value)
-    setAristas(calcularAristas(event.currentTarget.value))
   }
 
   return (
@@ -239,21 +229,25 @@ function App() {
         <H1>Algoritmo Kruskal</H1>
         <div className="grid">
           <Form action="" onSubmit={handleSubmit}>
-            <label htmlFor="">Ingrese el número de vertices</label>
-            <input type="text" name="nodes" onChange={handleChange} defaultValue={3} placeholder='Ingrese el número de nodos' />
-            <label htmlFor="">Total de Aristas {aristas}</label>
-
+            <label htmlFor="">Número de Vertices</label>
+            <input type="text" name="nodes" value={nodes} onChange={handleUpdateNodesChange} placeholder='Ingrese el número de nodos' />
+            <label htmlFor="">Número de Aristas</label>
+            <input type="text" placeholder='Número de Aristas' defaultValue={3} onChange={handleChange} name="aristas" />
             {
               Array.from({ length: aristas }).map((item, index) => {
                 return (
-                  <>
+                  <div key={index}>
                     <label htmlFor="">Arista {index + 1}</label>
-                    <input type="text" name="w[]" defaultValue={'{"e": [0,1], "w": 11}'} required placeholder={`ejem: {"e":[0,1], "w":10}`} />
-                  </>
+                    <div className='arista'>
+                      <input type="number" placeholder="Nodo 1" name="n1List[]" max={nodes - 1} required />
+                      <input type="number" placeholder="Nodo 2" name="n2List[]" max={nodes - 1} required />
+                      <input type="number" name="w[]" required placeholder="Peso" />
+                    </div>
+                  </div>
                 )
               })
             }
-            <button>¡animar!</button>
+            <button>¡ANIMAR!</button>
           </Form>
           <div className="graph-section">
             <div id="graph"></div>
