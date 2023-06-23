@@ -1,3 +1,13 @@
 html {
   color-scheme: dark light;
 }
+
+body {
+  margin: 0;
+}
+
+footer {
+  background: #0093dc;
+  padding: 1rem;
+  margin-top: 1rem;
+}

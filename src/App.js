@@ -7,38 +7,6 @@ import styled from 'styled-components'
 let UnionFind = require('union-find');
 
 
-const AppStyled = styled.main`
-  .wrapper {
-    max-inline-size: 1024px;
-    margin: 0 auto;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-  }
-  .arista {
-    display: flex;
-    gap: 1rem;
-    input {
-      flex: 1;
-      width: 100%;
-      font-size: .8rem;
-      &:invalid {
-        border-color: red;
-      }
-      &:placeholder-shown:invalid {
-        border-color: grey;
-      }
-      &:valid {
-        border-color: green;
-      }
-      &::-webkit-inner-spin-button {
-        display: none;
-      }
-    }
-  }
-
-`
 
 const Form = styled.form`
   padding-block: 2rem;
@@ -57,7 +25,7 @@ const Form = styled.form`
   }
   button {
     font-size: 2.5rem;
-    background: #2a57c4;
+    background: #0093dc;
     color: white;
     padding: .5rem 1rem;
     border: none;
@@ -224,37 +192,35 @@ function App() {
   }
 
   return (
-    <AppStyled className="App">
-      <div className="wrapper">
-        <H1>Algoritmo Kruskal</H1>
-        <div className="grid">
-          <Form action="" onSubmit={handleSubmit}>
-            <label htmlFor="">Número de Vertices</label>
-            <input type="text" name="nodes" value={nodes} onChange={handleUpdateNodesChange} placeholder='Ingrese el número de nodos' />
-            <label htmlFor="">Número de Aristas</label>
-            <input type="text" placeholder='Número de Aristas' defaultValue={3} onChange={handleChange} name="aristas" />
-            {
-              Array.from({ length: aristas }).map((item, index) => {
-                return (
-                  <div key={index}>
-                    <label htmlFor="">Arista {index + 1}</label>
-                    <div className='arista'>
-                      <input type="number" placeholder="Nodo 1" name="n1List[]" max={nodes - 1} required />
-                      <input type="number" placeholder="Nodo 2" name="n2List[]" max={nodes - 1} required />
-                      <input type="number" name="w[]" required placeholder="Peso" />
-                    </div>
+    <>
+      <H1>Algoritmo Kruskal</H1>
+      <div className="grid">
+        <Form action="" onSubmit={handleSubmit}>
+          <label htmlFor="">Número de Vertices</label>
+          <input type="text" name="nodes" value={nodes} onChange={handleUpdateNodesChange} placeholder='Ingrese el número de nodos' />
+          <label htmlFor="">Número de Aristas</label>
+          <input type="text" placeholder='Número de Aristas' defaultValue={3} onChange={handleChange} name="aristas" />
+          {
+            Array.from({ length: aristas }).map((item, index) => {
+              return (
+                <div key={index}>
+                  <label htmlFor="">Arista {index + 1}</label>
+                  <div className='arista'>
+                    <input type="number" placeholder="Nodo 1" name="n1List[]" max={nodes - 1} required />
+                    <input type="number" placeholder="Nodo 2" name="n2List[]" max={nodes - 1} required />
+                    <input type="number" name="w[]" required placeholder="Peso" />
                   </div>
-                )
-              })
-            }
-            <button>¡ANIMAR!</button>
-          </Form>
-          <div className="graph-section">
-            <div id="graph"></div>
-          </div>
+                </div>
+              )
+            })
+          }
+          <button>¡ANIMAR!</button>
+        </Form>
+        <div className="graph-section">
+          <div id="graph"></div>
         </div>
       </div>
-    </AppStyled>
+    </>
   );
 }
 

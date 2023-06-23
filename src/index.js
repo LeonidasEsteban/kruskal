@@ -2,11 +2,25 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import Layout from './Layout';
+import Kruskal from './kruskal';
+import Home from './home';
 import reportWebVitals from './reportWebVitals';
+
+import { Routes, Route, BrowserRouter } from "react-router-dom";
+
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="kruskal" element={<Kruskal />} />
+          <Route path="kruskal-anim" element={<App />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
